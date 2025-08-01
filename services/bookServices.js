@@ -1,7 +1,15 @@
 const Book = require('../models/bookModel.js');
  
-exports.getBooks = async () => {
-  return await Book.find();
+exports.getBooks = async (page = 1, limit = 10) => {
+
+  const skip = (page - 1) * limit;
+
+  return await Book.find()
+
+    .skip(skip)
+
+    .limit(limit);
+
 };
  
 exports.getBookById = async (id) => {

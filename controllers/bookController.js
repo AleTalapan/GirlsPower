@@ -3,14 +3,17 @@ const booksService = require('../services/bookServices.js');
 // GET /books
 exports.getAllBooks = async (req, res) => {
   try {
-    const books = await booksService.getBooks();
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+ 
+    const books = await booksService.getBooks(page, limit);
     res.status(200).json(books);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to fetch books" });
   }
 };
- 
+
 // GET /books/:id
 exports.getBookById = async (req, res) => {
   try {
