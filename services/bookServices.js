@@ -1,32 +1,40 @@
-let books = [];
+const Book = require('../models/bookModel.js');
+ 
+exports.getBooks = async () => {
+  return await Book.find();
+};
+ 
+exports.getBookById = async (id) => {
+  return await Book.findById(id);
+};
+ 
+exports.addBook = async (data) => {
+  const { title, author } = data;
 
-function validateBook({ title, author }) {
-  if (!title || !author || typeof title !== 'string' || typeof author !== 'string') {
-    throw new Error("Title and author are required.");
+  const existingBook = await Book.findOne({ title, author });
+
+  if (existingBook) {
+    throw new Error('Cartea există deja.');
   }
-}
 
-exports.getBooks = () => books;
+  const book = new Book(data);
+  return await book.save();
+};
+ 
+exports.updateBook = async (id, data) => {
+  const { title, author } = data;
 
-exports.getBookById = (id) => books.find(b => b.id === parseInt(id, 10));
+  const existingBook = await Book.findOne({ title, author, _id: { $ne: id } });
 
-exports.addBook = (data) => {
-  validateBook(data);
-  const newBook = {
-    id: Date.now(),
-    title: data.title.trim(),
-    author: data.author.trim()
-  };
-  books.push(newBook);
-  return newBook;
+  if (existingBook) {
+    throw new Error('Există deja o altă carte cu acest titlu și autor.');
+  }
+
+  return await Book.findByIdAndUpdate(id, data, { new: true, runValidators: true });
 };
 
-exports.updateBook = (id, data) => {
-  validateBook(data);
-  const index = books.findIndex(b => b.id === parseInt(id, 10));
-  if (index === -1) throw new Error("Book not found");
-  books[index] = { id: parseInt(id, 10), title: data.title.trim(), author: data.author.trim() };
-  return books[index];
-};
 
-exports.bookExists = (id) => books.some(b => b.id === parseInt(id, 10));
+exports.bookExists = async (id) => {
+  const book = await Book.findById(id);
+  return !!book;
+};
